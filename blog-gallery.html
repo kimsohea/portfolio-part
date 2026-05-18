@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>블로그 갤러리 4x4</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Inter", "Pretendard", "Noto Sans KR", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap { max-width: 1280px; margin: 0 auto; padding: 48px 24px 72px; }
+      .header { margin-bottom: 24px; }
+      .header h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 2.8vw, 2.3rem); }
+      .header p { margin: 0; color: var(--muted); }
+
+      .toolbar {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+        padding: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .toolbar-group { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .toolbar-label { color: var(--muted); font-size: .82rem; font-weight: 600; }
+      .toggle-btn, .filter-btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        border-radius: 999px;
+        padding: 6px 11px;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .toggle-btn.active, .filter-btn.active {
+        background: #0f172a;
+        color: #fff;
+        border-color: #0f172a;
+      }
+
+      .grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; }
+      .grid.list-view { grid-template-columns: 1fr; }
+      .grid.list-view .card { grid-template-columns: 220px 1fr; }
+      .grid.list-view .thumb { aspect-ratio: 16/9; height: 100%; }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        display: grid;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd5e1;
+        box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .thumb { aspect-ratio: 16 / 10; overflow: hidden; }
+      .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+      .content { padding: 14px; display: grid; gap: 10px; }
+      .meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+      .meta-right { display: inline-flex; align-items: center; gap: 8px; }
+      .label {
+        border: 1px solid #dbe3ef;
+        background: #f8fafc;
+        color: #334155;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 0.74rem;
+        font-weight: 600;
+      }
+      .avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        border: 1px solid #e2e8f0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        font-size: 0.72rem;
+      }
+      .title { margin: 0; font-size: 0.95rem; line-height: 1.35; }
+
+      @media (max-width: 1080px) { .grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+      @media (max-width: 760px) {
+        .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .grid.list-view .card { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="header">
+        <h1>블로그 게시글 갤러리 (4 × 4)</h1>
+        <p>제목 중앙 + 하단 메타(좌측 날짜, 우측 라벨 &gt; 아바타) 구조입니다.</p>
+      </header>
+
+      <section aria-label="블로그 게시글 섹션">
+        <div class="toolbar">
+          <div class="toolbar-group" role="group" aria-label="타입 필터">
+            <span class="toolbar-label" aria-hidden="true">⏷</span>
+            <button class="filter-btn active" data-type="all" type="button">전체</button>
+            <button class="filter-btn" data-type="Frontend" type="button">프론트</button>
+            <button class="filter-btn" data-type="UI" type="button">UI</button>
+            <button class="filter-btn" data-type="Vue" type="button">Vue</button>
+            <button class="filter-btn" data-type="Figma" type="button">Figma</button>
+            <button class="filter-btn" data-type="React" type="button">React</button>
+          </div>
+          <div class="toolbar-group" role="group" aria-label="보기 전환">
+            <span class="toolbar-label" aria-hidden="true">◫</span>
+            <button class="toggle-btn active" data-view="gallery" type="button">gallery</button>
+            <button class="toggle-btn" data-view="list" type="button">list</button>
+          </div>
+        </div>
+
+        <div class="grid" id="articleGrid" aria-label="블로그 게시글 목록"></div>
+      </section>
+    </main>
+
+    <script>
+      const articles = [
+        ["2026.05.18", "React", "⚛", "React 컴포넌트 구조를 디자인 시스템에 맞게 리팩토링하는 방법", "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.16", "UI", "🎨", "사용자 여정을 고려한 랜딩 페이지 정보 구조 설계 체크리스트", "https://images.unsplash.com/photo-1505238680356-667803448bb6?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.15", "Vue", "💚", "Vue 기반 대시보드에서 카드 컴포넌트 재사용 패턴 만들기", "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.14", "Figma", "🟣", "Figma 토큰을 코드 변수로 연결할 때 필요한 워크플로우", "https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.12", "Frontend", "🧱", "아티클 리스트 UI 접근성: 포커스와 대체 텍스트 실전 가이드", "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.11", "UI", "📊", "콘텐츠 전략 수립을 위한 사용자 행동 데이터 시각화 예시", "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.10", "Frontend", "🔎", "SEO 관점에서 아티클 목록 구조화 데이터 적용하기", "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.09", "Vue", "🗂", "개발팀과 디자인팀의 협업 생산성을 높이는 스프린트 운영법", "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.08", "React", "📱", "모바일 퍼스트로 카드형 콘텐츠 레이아웃을 설계할 때의 기준점", "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.07", "Frontend", "🧩", "SSR 기반 콘텐츠 페이지를 캐싱해 TTFB를 줄이는 실전 팁", "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.06", "UI", "📈", "블로그 유입 분석에서 반드시 추적해야 할 핵심 이벤트", "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.05", "Figma", "✍️", "기술 블로그 글을 더 읽히게 만드는 제목 구조와 도입부 공식", "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.04", "Vue", "🚀", "주니어 개발자가 실무에서 빠르게 성장하는 기록 습관 만들기", "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.03", "React", "📣", "초기 서비스에서 블로그 섹션을 성장 채널로 활용한 운영 사례", "https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.02", "Frontend", "⚙️", "팀 단위 프론트엔드 개발에서 재사용 가능한 카드 컴포넌트 설계", "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80"],
+        ["2026.05.01", "UI", "🟨", "모듈화가 잘 된 코드베이스를 위한 파일/폴더 네이밍 규칙", "https://images.unsplash.com/photo-1498050108023-3f4df085f0f0?auto=format&fit=crop&w=900&q=80"]
+      ];
+
+      const grid = document.getElementById("articleGrid");
+      const viewButtons = document.querySelectorAll(".toggle-btn");
+      const filterButtons = document.querySelectorAll(".filter-btn");
+
+      let currentType = "all";
+
+      function render() {
+        const filtered = currentType === "all" ? articles : articles.filter(([, label]) => label === currentType);
+        grid.innerHTML = filtered.map(([date, label, icon, title, image]) => `
+          <a class="card" href="#">
+            <div class="thumb"><img src="${image}" alt="${title}"/></div>
+            <div class="content">
+              <h2 class="title">${title}</h2>
+              <div class="meta">
+                <span>${date}</span>
+                <span class="meta-right"><span class="label">${label}</span><span class="avatar">${icon}</span></span>
+              </div>
+            </div>
+          </a>
+        `).join("");
+      }
+
+      viewButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          viewButtons.forEach((b) => b.classList.remove("active"));
+          button.classList.add("active");
+          grid.classList.toggle("list-view", button.dataset.view === "list");
+        });
+      });
+
+      filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          filterButtons.forEach((b) => b.classList.remove("active"));
+          button.classList.add("active");
+          currentType = button.dataset.type;
+          render();
+        });
+      });
+
+      render();
+    </script>
+  </body>
+</html>
